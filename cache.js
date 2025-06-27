@@ -18,8 +18,14 @@ async function loadCachedGame() {
         const store = tx.objectStore("cache");
         const getReq = store.get("game");
 
-        getReq.onsuccess = () => resolve(getReq.result || null);
-        getReq.onerror = () => reject(getReq.error);
+        getReq.onsuccess = () => {
+            db.close()
+            resolve(getReq.result || null);
+        };
+        getReq.onerror = () => {
+            db.close()
+            reject(putReq.error)
+        };
     });
 }
 
@@ -30,7 +36,13 @@ async function saveGameToCache(blob) {
         const store = tx.objectStore("cache");
         const putReq = store.put(blob, "game");
 
-        putReq.onsuccess = () => resolve();
-        putReq.onerror = () => reject(putReq.error);
+        putReq.onsuccess = () => {
+            db.close()
+            resolve();
+        };
+        putReq.onerror = () => {
+            db.close()
+            reject(putReq.error)
+        };
     });
 }

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Balatro on the Web</title>
+        <link rel="stylesheet" href="style.css" />
+        <script src="lib/data.js"></script>
+        <script src="lib/FileSaver.min.js"></script>
+        <script src="lib/jszip.min.js"></script>
+        <script src="patches.js"></script>
+        <script src="cache.js"></script>
+        <script src="app.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Balatro on the Web</h1>
+
+            <label class="file-label">
+                <input type="file" id="fileInput" accept=".exe,.love" />
+                Choose Balatro.exe or Balatro.love
+            </label>
+
+            <button id="parseBtn" disabled>Parse</button>
+
+            <progress id="progressBar" value="0" max="100" class="progress hidden"></progress>
+            <br>
+            <p id="cachedGameInfo" class="hidden">Game was cached is already ready to play</p>
+            <p id="checkingCacheInfo">Checking the cache for the game</p>
+            <button id="runBtn" class="hidden">Run</button>
+            <button id="buildBtn" class="hidden">Build & Download</button>
+        </div>
+
+        <!-- Error Modal -->
+        <div id="errorModal" class="modal hidden">
+            <div class="modal-content">
+                <span id="closeModal" class="close">&times;</span>
+                <h2>Error</h2>
+                <p id="errorMessage">Something went wrong.</p>
+            </div>
+        </div>
+
+        <script>
+            fileInput.addEventListener('change', () => {
+                parseBtn.disabled = !fileInput.files.length;
+            });
+
+            // Error modal logic
+            const errorModal = document.getElementById("errorModal");
+            const closeModal = document.getElementById("closeModal");
+            const errorMessage = document.getElementById("errorMessage");
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorModal.classList.remove("hidden");
+            }
+
+            function hideError() {
+                errorModal.classList.add("hidden")
+            }
+
+            closeModal.onclick = () => {
+                errorModal.classList.add("hidden");
+            };
+
+            window.onclick = (event) => {
+                if (event.target === errorModal) {
+                    errorModal.classList.add("hidden");
+                }
+            };
+        </script>
+    </body>
+</html>

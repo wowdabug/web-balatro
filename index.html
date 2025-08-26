@@ -1,73 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>Balatro on the Web</title>
-        <link rel="stylesheet" href="style.css" />
-        <script src="lib/data.js"></script>
-        <script src="lib/FileSaver.min.js"></script>
-        <script src="lib/jszip.min.js"></script>
-        <script src="patches.js"></script>
-        <script src="cache.js"></script>
-        <script src="app.js"></script>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Balatro on the Web</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Balatro on the Web</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="lib/data.js"></script>
+    <script src="lib/FileSaver.min.js"></script>
+    <script src="lib/jszip.min.js"></script>
+    <script src="lib/toml.js"></script>
+    <script src="renderVersionList.js"></script>
+    <script src="runVersion.js"></script>
+    <script src="loadVersion.js"></script>
+    <script src="mods.js"></script>
+    <script src="patches.js"></script>
+    <script src="cache.js"></script>
+    <script src="build.js"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Balatro</h1>
 
-            <label class="file-label">
-                <input type="file" id="fileInput" accept=".exe,.love" />
-                Choose Balatro.exe or Balatro.love
-            </label>
-
-            <button id="parseBtn" disabled>Parse</button>
-
-            <progress id="progressBar" value="0" max="100" class="progress hidden"></progress>
-            <br>
-            <p id="cachedGameInfo" class="hidden">Game was cached is already ready to play</p>
-            <p id="checkingCacheInfo">Checking the cache for the game</p>
-            <button id="runBtn" class="hidden">Run</button>
-            <button id="buildBtn" class="hidden">Build & Download</button>
+      <section>
+        <h2>New Version</h2>
+        <div class="options">
+          <label><input type="radio" name="source" value="file" checked id="loadExeRadio"/> Load .exe or .love</label><a href="whereisexe.html">(?)</a>&nbsp;<input type="file" id="exeInput"><br>
+          <label><input type="radio" name="source" value="vanilla" disabled id="loadVanillaRadio"/> Use Vanilla</label>
         </div>
-
-        <!-- Error Modal -->
-        <div id="errorModal" class="modal hidden">
-            <div class="modal-content">
-                <span id="closeModal" class="close">&times;</span>
-                <h2>Error</h2>
-                <p id="errorMessage">Something went wrong.</p>
-            </div>
+        
+        <h3>Mods</h3>
+        <div class="addMods">
+          <button id="addModDir">Add Mod Folder</button>
+          <button id="clearMods">Clear Mods</button>
+          <button id="useLovelyDump">Use Lovely Dump</button>
+          <h4>Mods Found:</h4>
+          <div class="leftAlign" id="mod-list"></div>
         </div>
+        <div class="makeName">
+          <label for="makeName">Name: </label><input id="makeName" placeholder="vanilla">
+        </div>
+        <div class="center">
+          <button id="parseBtn" disabled>Build</button>
+        </div>
+        <progress id="progressBar" value="0" max="100" class="progress hidden"></progress>
+        <div class="center">
+          <p id="status">Loading Cache</p>
+        </div>
+      </section>
 
-        <script>
-            fileInput.addEventListener('change', () => {
-                parseBtn.disabled = !fileInput.files.length;
-            });
+      <section>
+        <h2>Player</h2>
+        <div class="player-controls">
+          <p id="loadedName">Nothing loaded</p>
+          <button id="runBtn" disabled>Start Game</button>
+          <button id="downloadCachedBtn" disabled>Download Version</button>
+          <button id="makePortableBtn" disabled>Make Portable</button>
+        </div>
+      </section>
 
-            // Error modal logic
-            const errorModal = document.getElementById("errorModal");
-            const closeModal = document.getElementById("closeModal");
-            const errorMessage = document.getElementById("errorMessage");
+      <section>
+        <h2>Save Data</h2>
+        <button disabled id="save-download">Download</button>
+        <button disabled id="save-upload">Upload</button>
+        <button disabled id="save-delete">Delete</button>
+      </section>
 
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorModal.classList.remove("hidden");
-            }
+      <section>
+        <h2>Versions</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="versionsList">
+          </tbody>
+        </table>
+      </section>
 
-            function hideError() {
-                errorModal.classList.add("hidden")
-            }
+      <!-- Error Modal -->
+      <div id="errorModal" class="modal hidden">
+        <div class="modal-content">
+          <span id="closeModal" class="close">&times;</span>
+          <h2>Error</h2>
+          <p id="errorMessage">Something went wrong.</p>
+        </div>
+      </div>
 
-            closeModal.onclick = () => {
-                errorModal.classList.add("hidden");
-            };
+      <script>
+        const errorModal = document.getElementById("errorModal");
+        const closeModal = document.getElementById("closeModal");
+        const errorMessage = document.getElementById("errorMessage");
 
-            window.onclick = (event) => {
-                if (event.target === errorModal) {
-                    errorModal.classList.add("hidden");
-                }
-            };
-        </script>
-    </body>
+        function showError(message) {
+          errorMessage.textContent = message;
+          errorModal.classList.remove("hidden");
+        }
+
+        closeModal.onclick = () => {
+          errorModal.classList.add("hidden");
+        };
+
+        window.onclick = (event) => {
+          if (event.target === errorModal) {
+            errorModal.classList.add("hidden");
+          }
+        };
+      </script>
+    </div>
+  </body>
 </html>

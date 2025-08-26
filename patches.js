@@ -343,6 +343,7 @@ function M.bit.bswap(x)
 end
 
 return M`,
+// -------------------------------------------------------------------------------
     "web_patches.lua": `-- Other patches not in this file:
 -- Disable steam integration
 -- F_SOUND_THREAD = false
@@ -351,11 +352,29 @@ love.system.getOS = function()
   return "Windows"
 end
 
+local _format = string.format
+function string:format(key, ...)
+    local args = {...}
+    -- Replace nil with empty string
+    local ok, ret = pcall(function() return _format(self, key, unpack(args)) end)
+    if ok then
+        return ret
+    else
+        return key
+    end
+end
+
+function override_setMipmapFilter(texture)
+    getmetatable(texture).__index.setMipmapFilter = function() end
+    return texture
+end
+
 local _newImage = love.graphics.newImage
 love.graphics.newImage = function(path, config)
     config.mipmaps = false -- Disable mipmaps for web compatibility
-    return _newImage(path, config)
+    return override_setMipmapFilter(_newImage(path, config))
 end
+
 
 local _quit = love.event.quit
 love.event.quit = function()
@@ -366,7 +385,7 @@ end
 local _randomSeed = math.randomseed
 math.randomseed = function(seed)
     if math.floor(seed) ~= seed then -- Non integer seeds do not work on web contexts
-        _randomSeed(seed * 25565)
+        _randomSeed(seed * 999999999) -- Should be big enough
         return
     end
     _randomSeed(seed)
@@ -448,7 +467,129 @@ love.thread.getChannel = function(name)
     return channels[name]
 end
 
+-- Fix Log
+local _log = math.log
+math.log = function(x, base)
+  if base then
+    return _log(x) / _log(base)
+  end
+  return _log(x)
+end
+
 -- Patch load for smods
 -- btw, mod support is pretty nonexistent
-load = loadstring`
+load = loadstring`,
+// -------------------------------------------------------------------------------
+  "nativefs.lua": `-- faknativefs.lua
+local nativefs = {}
+
+function join_path(a, b)
+    if b:find("^/") then
+        return b
+    end
+    if not a:find("/$") then
+        a = a .. "/"
+    end
+    return a .. b
+end
+
+nativefs.workingDirectory = ""
+
+-- Read a file from the game's source or save directory
+function nativefs.read(filename)
+    if love.filesystem.getInfo(join_path(nativefs.workingDirectory, filename)) then
+        return love.filesystem.read(join_path(nativefs.workingDirectory, filename))
+    else
+        return nil, "File does not exist"
+    end
+end
+
+-- Write to a file in the save directory
+function nativefs.write(filename, contents)
+    return love.filesystem.write(join_path(nativefs.workingDirectory, filename), contents)
+end
+
+-- Check if a path exists and get info
+function nativefs.getInfo(path)
+    return love.filesystem.getInfo(join_path(nativefs.workingDirectory, path))
+end
+
+function nativefs.getDirectoryItemsInfo(path)
+    -- { type: "directory" | "file", name: "..." }
+    local files = love.filesystem.getDirectoryItems(join_path(nativefs.workingDirectory, path))
+    local out = {}
+    for i, v in ipairs(files) do
+        local info = love.filesystem.getInfo(join_path(join_path(nativefs.workingDirectory, path), v))
+        out[i] = { name = v, type = info.type }
+    end
+    return out
+end
+
+-- Check if a file exists
+function nativefs.exists(path)
+    return love.filesystem.getInfo(join_path(nativefs.workingDirectory, path)) ~= nil
+end
+
+-- List directory contents
+function nativefs.getDirectoryItems(path)
+    return love.filesystem.getDirectoryItems(join_path(nativefs.workingDirectory, path))
+end
+
+-- Create a directory
+function nativefs.mkdir(path)
+    return love.filesystem.createDirectory(join_path(nativefs.workingDirectory, path))
+end
+
+-- Remove a file or directory
+function nativefs.remove(path)
+    return love.filesystem.remove(join_path(nativefs.workingDirectory, path))
+end
+
+-- Load Lua file as chunk
+function nativefs.load(filename)
+    local contents, err = love.filesystem.read(join_path(nativefs.workingDirectory, filename))
+    if not contents then return nil, err end
+    return load(contents, '@' .. filename)
+end
+
+function nativefs.newFileData(path)
+    return love.filesystem.newFileData(join_path(nativefs.workingDirectory, path))
+end
+
+function nativefs.setWorkingDirectory(path)
+    nativefs.workingDirectory = join_path(nativefs.workingDirectory, path)
+    print("Navigated to "..nativefs.workingDirectory)
+end
+
+function nativefs.getWorkingDirectory()
+    return nativefs.workingDirectory
+end
+
+-- Read as lines (like nativefs.lines)
+function nativefs.lines(filename)
+    local content = nativefs.read(filename)
+    local i = 1
+    return function()
+        if not content then return nil end
+        local next_newline = content:find("\\n", i)
+        if not next_newline then
+            local line = content:sub(i)
+            content = nil
+            return line
+        else
+            local line = content:sub(i, next_newline - 1)
+            i = next_newline + 1
+            return line
+        end
+    end
+end
+
+return nativefs`,
+// -------------------------------------------------------------------------------
+  "lovely.lua": `local lovely = {}
+
+lovely.version = "1.0.0-WEB"
+lovely.mod_dir = "Mods/"
+
+return lovely`
 }

@@ -385,7 +385,8 @@ end
 local _randomSeed = math.randomseed
 math.randomseed = function(seed)
     if math.floor(seed) ~= seed then -- Non integer seeds do not work on web contexts
-        _randomSeed(seed * 999999999) -- Should be big enough
+        -- Issue #4 (https://github.com/W0W53R/web-balatro/issues/4): Non seeded runs are all the same
+        _randomSeed((seed % 1) * 2147483647, math.floor(seed))  -- Seperate digit and decimal parts to ensure randomness
         return
     end
     _randomSeed(seed)

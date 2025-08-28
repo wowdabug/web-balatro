@@ -19,8 +19,6 @@ python -m http.server
 
 The RNG generator on the web differes from the native RNG implementation, so seeded runs will differ to the native counterparts.
 
-Due to the random number I chose, there are 999999999 unique seeds.
-
 Some computers run the internal WebGL shaders differently and may result in odd color effects.
 
 ## Caching

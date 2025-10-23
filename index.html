@@ -25,8 +25,13 @@
       <section>
         <h2>New Save</h2>
         <div class="options">
-          <input type="file" id="file_input" style="display:none;">
-          <label>Loading .exe from the web...</label>
+          <label>
+            <input type="radio" name="source" value="file" checked id="loadExeRadio"/> 
+            Load .exe or .love
+          </label>
+          <a href="whereisexe.html">(?)</a>&nbsp;
+          <input type="file" id="exeInput"><br>
+        </div>
         <h3>Mods</h3>
         <div class="addMods">
           <button id="addModDir">Add Mod Folder</button>
@@ -110,31 +115,28 @@
       
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
-  const EXE_URL = "https://wowdabug.github.io/web-balatro/Balatro.exe"; // replace this
+  const EXE_URL = "https://wowdabug.github.io/web-balatro/Balatro.exe"; // change to your actual URL
+  const file_input = document.getElementById("exeInput");
 
   try {
     const resp = await fetch(EXE_URL, { mode: "cors" });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
     const buffer = await resp.arrayBuffer();
     const file = new File([buffer], "remote.exe", { type: "application/octet-stream" });
 
-    // Inject the file into your existing app.js logic:
-    const file_input = document.getElementById("exeInput");
+    // Inject the file into the file input so app.js thinks the user selected it
     const dt = new DataTransfer();
     dt.items.add(file);
     file_input.files = dt.files;
 
-    // Ensure the radio option is set:
-    const load_exe_radio = document.getElementById("loadExeRadio");
-    if (load_exe_radio) load_exe_radio.checked = true;
+    // Trigger onchange event to enable the Build button
+    file_input.dispatchEvent(new Event("change", { bubbles: true }));
 
-    // Trigger the build button automatically if desired:
+    // Optionally auto-click the Build button
     const build_button = document.getElementById("parseBtn");
     if (build_button) build_button.click();
-
   } catch (err) {
-    console.error("Failed to load remote .exe:", err);
+    console.error("Failed to auto-load .exe:", err);
   }
 });
 </script>

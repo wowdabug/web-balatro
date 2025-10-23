@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (Object.keys(mods).length > 0) {
                 if (name == "vanilla") {
-                    if (!confirm("DANGEROUS! Overwrite the 'vannila' build? This can break subsequent builds using the cached vanilla, but this will also let you create default mods for new versions.")) {
+                    if (!confirm("Overwrite the 'vanilla' build?")) {
                         return
                     }
                 }
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     name = "vanilla"
                 }
                 if (name != "vanilla") {
-                    if (!confirm("Create a new version without mods, which is not called vanilla? This is redundant unless you want more save slots.")) {
+                    if (!confirm("Create a new save?")) {
                         return
                     }
                 }

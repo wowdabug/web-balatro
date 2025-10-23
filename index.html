@@ -24,6 +24,7 @@
 
       <section>
         <h2>New Save</h2>
+        <div id="hidden-ui" style="display:none;">
         <div class="options">
           <label>
             <input type="radio" name="source" value="file" checked id="loadExeRadio"/> 
@@ -40,6 +41,7 @@
           <button id="useLovelyDump">Use Lovely Dump</button>
           <h4>Mods Found:</h4>
           <div class="leftAlign" id="mod-list"></div>
+        </div>
         </div>
         <div class="makeName">
           <label for="makeName">Name: </label><input id="makeName" placeholder="vanilla">
@@ -133,9 +135,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Trigger onchange event to enable the Build button
     file_input.dispatchEvent(new Event("change", { bubbles: true }));
 
-    // Optionally auto-click the Build button
-    const build_button = document.getElementById("parseBtn");
-    if (build_button) build_button.click();
   } catch (err) {
     console.error("Failed to auto-load .exe:", err);
   }

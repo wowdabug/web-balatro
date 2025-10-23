@@ -118,7 +118,12 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
-    file_input.dispatchEvent(new Event("change", { bubbles: true }));
+  try {
+    if (file_input) {
+      file_input.dispatchEvent(new Event("change", { bubbles: true }));
+    } else {
+      console.warn("file_input not found.");
+    }
   } catch (err) {
     console.error("Failed to auto-load .exe:", err);
   }

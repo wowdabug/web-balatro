@@ -23,20 +23,25 @@
       <h1>Balatro</h1>
 
       <section>
-        <h2>New Version</h2>
+        <h2>New Save</h2>
         <div class="options">
-          <label><input type="radio" name="source" value="file" checked id="loadExeRadio"/> Load .exe or .love</label><a href="whereisexe.html">(?)</a>&nbsp;<input type="file" id="exeInput"><br>
-          <label><input type="radio" name="source" value="vanilla" checked id="loadVanillaRadio"/> Use Vanilla</label>
-        </div>
-        
-        <h3>Mods</h3>
-        <div class="addMods">
-          <button id="addModDir">Add Mod Folder</button>
-          <button id="clearMods">Clear Mods</button>
-          <button id="useLovelyDump">Use Lovely Dump</button>
-          <h4>Mods Found:</h4>
-          <div class="leftAlign" id="mod-list"></div>
-        </div>
+  <label>
+    <input type="radio" name="source" value="file" checked id="loadExeRadio"/>
+    Load .exe or .love from local file
+  </label>
+  <a href="whereisexe.html">(?)</a>
+  &nbsp;
+  <input type="file" id="exeInput"><br>
+
+  <label>
+    <input type="radio" name="source" value="web" id="loadWebRadio"/>
+    Load .exe already on the web
+  </label>
+  &nbsp;
+
+  <input type="text" id="exeUrl" placeholder="https://example.com/game.exe" value="https://example.com/game.exe">
+  <button id="loadButton">Load</button>
+</div>
         <div class="makeName">
           <label for="makeName">Name: </label><input id="makeName" placeholder="vanilla">
         </div>
@@ -50,7 +55,7 @@
       </section>
 
       <section>
-        <h2>Player</h2>
+        <h2>Load Save</h2>
         <div class="player-controls">
           <p id="loadedName">Nothing loaded</p>
           <button id="runBtn" disabled>Start Game</button>
@@ -67,7 +72,7 @@
       </section>
 
       <section>
-        <h2>Versions</h2>
+        <h2>Saves</h2>
         <table>
           <thead>
             <tr>
@@ -109,6 +114,66 @@
           }
         };
       </script>
+      
+<script>
+  // Replace this with the function your app uses to accept a File/Blob.
+  // Example signature: handleFile(fileOrBlob)
+  function handleFile(file) {
+    // Example placeholder — replace with your emulator's loader:
+    console.log('Got file:', file);
+    // if emulator expects ArrayBuffer:
+    // file.arrayBuffer().then(buf => emulator.loadFromBuffer(buf));
+  }
+
+  // Local file input handling (unchanged)
+  document.getElementById('exeInput').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) handleFile(f);
+  });
+
+  // Load button: either fetch remote URL or trigger the file input depending on radio
+  document.getElementById('loadButton').addEventListener('click', async () => {
+    const useWeb = document.getElementById('loadWebRadio').checked;
+    if (!useWeb) {
+      // trigger file chooser
+      document.getElementById('exeInput').click();
+      return;
+    }
+
+    const url = document.getElementById('exeUrl').value.trim();
+    if (!url) {
+      alert('Please enter a URL or switch to local file.');
+      return;
+    }
+
+    try {
+      // fetch as arrayBuffer (CORS required on server)
+      const resp = await fetch(url, { mode: 'cors' });
+      if (!resp.ok) throw new Error('Fetch failed: ' + resp.status + ' ' + resp.statusText);
+
+      const buffer = await resp.arrayBuffer();
+
+      // convert to a File (or Blob) — many loaders accept either
+      const filename = url.split('/').pop() || 'remote.exe';
+      const file = new File([buffer], filename, { type: 'application/octet-stream' });
+
+      // hand to the same loader used for local files
+      handleFile(file);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to load remote file. Check the URL and CORS headers.');
+    }
+  });
+
+  // --- OPTIONAL: auto-load on page load with a hardcoded URL ---
+  // const AUTO_URL = 'https://example.com/game.exe';
+  // (async function autoLoad() {
+  //   // uncomment if you want to auto-load on page open
+  //   // document.getElementById('loadWebRadio').checked = true;
+  //   // document.getElementById('exeUrl').value = AUTO_URL;
+  //   // document.getElementById('loadButton').click();
+  // })();
+</script>
     </div>
   </body>
 </html>

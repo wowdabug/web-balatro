@@ -108,37 +108,37 @@
         };
       </script>
       
-
 <script>
-  // Replace with your actual .exe URL:
-  const EXE_URL = "https://wowdabug.github.io/web-balatro/Balatro.exe";
+document.addEventListener("DOMContentLoaded", async () => {
+  const EXE_URL = "https://example.com/game.exe"; // replace this
 
-  // Replace this with your emulator's actual loader function.
-  // Example: function loadExe(buffer) { emulator.loadFromBuffer(buffer); }
-  async function handleExeFile(buffer) {
-    console.log("Loaded remote .exe, size:", buffer.byteLength);
-    // Example call:
-    // emulator.loadFromBuffer(buffer);
+  try {
+    const resp = await fetch(EXE_URL, { mode: "cors" });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const buffer = await resp.arrayBuffer();
+    const file = new File([buffer], "remote.exe", { type: "application/octet-stream" });
+
+    // Inject the file into your existing app.js logic:
+    const file_input = document.getElementById("exeInput");
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    file_input.files = dt.files;
+
+    // Ensure the radio option is set:
+    const load_exe_radio = document.getElementById("loadExeRadio");
+    if (load_exe_radio) load_exe_radio.checked = true;
+
+    // Trigger the build button automatically if desired:
+    const build_button = document.getElementById("parseBtn");
+    if (build_button) build_button.click();
+
+  } catch (err) {
+    console.error("Failed to load remote .exe:", err);
   }
-
-  async function loadRemoteExe() {
-    try {
-      const resp = await fetch(EXE_URL, { mode: "cors" });
-      if (!resp.ok) throw new Error(`Failed to fetch: ${resp.status} ${resp.statusText}`);
-
-      const buffer = await resp.arrayBuffer();
-      await handleExeFile(buffer);
-      console.log("Remote .exe loaded successfully!");
-    } catch (err) {
-      console.error("Error loading remote .exe:", err);
-      document.querySelector(".options").innerText =
-        "Failed to load remote .exe. Check URL or CORS settings.";
-    }
-  }
-
-  // Automatically load on page open
-  loadRemoteExe();
+});
 </script>
+
     </div>
   </body>
 </html>

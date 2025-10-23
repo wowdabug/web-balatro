@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const status_text = $("status");
 
     async function loadHardcodedGame() {
-        const url = "roms/mygame.exe"; // <-- your hardcoded file path
+        const url = "Balatro.exe"; // <-- your hardcoded file path
         const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to load hardcoded game file.");
         return await response.blob();

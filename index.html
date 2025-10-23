@@ -117,17 +117,74 @@
       </script>
 
 <script>
+
+
 document.addEventListener("DOMContentLoaded", async () => {
+
+
+  const EXE_URL = "https://wowdabug.github.io/web-balatro/Balatro.exe"; // change to your actual URL
+
+
+  const file_input = document.getElementById("exeInput");
+
+
+
+
+
   try {
-    if (file_input) {
-      file_input.dispatchEvent(new Event("change", { bubbles: true }));
-    } else {
-      console.warn("file_input not found.");
-    }
+
+
+    const resp = await fetch(EXE_URL, { mode: "cors" });
+
+
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+
+    const buffer = await resp.arrayBuffer();
+
+
+    const file = new File([buffer], "remote.exe", { type: "application/octet-stream" });
+
+
+
+
+
+    // Inject the file into the file input so app.js thinks the user selected it
+
+
+    const dt = new DataTransfer();
+
+
+    dt.items.add(file);
+
+
+    file_input.files = dt.files;
+
+
+
+
+
+    // Trigger onchange event to enable the Build button
+
+
+    file_input.dispatchEvent(new Event("change", { bubbles: true }));
+
+
+
+
+
   } catch (err) {
+
+
     console.error("Failed to auto-load .exe:", err);
+
+
   }
+
+
 });
+
+
 </script>
     </div>
   </body>
